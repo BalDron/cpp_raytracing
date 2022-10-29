@@ -1,16 +1,9 @@
 #include <stdexcept>
 #include <vector>
-    using std::vector;
 #include "color.h"
 
-Color::Color():
-    rgb{vector<int>{0, 0, 0}}
-{
-    check_bound();
-}
-
-Color::Color(int r, int g, int b):
-    rgb{vector<int>{r, g, b}}
+Color::Color(int r, int g, int b)
+    : rgb{std::vector<int>{r, g, b}}
 {
     check_bound();
 }
@@ -48,7 +41,7 @@ int Color::operator[](int i){
     return rgb[i];
 }
 
-Color Color::operator+(Color col){
+Color Color::operator+(Color& col){
     Color ret = Color(  rgb[0] + col[0],
                         rgb[1] + col[1],
                         rgb[2] + col[2]);
@@ -56,7 +49,7 @@ Color Color::operator+(Color col){
     return ret;
 }
 
-Color Color::operator-(Color col){
+Color Color::operator-(Color& col){
     Color ret = Color(  rgb[0] + col[0],
                         rgb[1] + col[1],
                         rgb[2] + col[2]);

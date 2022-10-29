@@ -2,4 +2,4 @@ main.cpp
 *.out
 *.o
 main
-build*
+build

@@ -10,6 +10,7 @@ enum class Shape_type{
 
 struct HitRecord{
     double t;
+    int ind;
     Vector3 hit_point;
     Vector3 hit_normal;
     Color color;
@@ -73,5 +74,5 @@ public:
     void set_rad(double rad);
     Color& get_color();
     double check_intersection(Ray& ray, Transform& transform);
-    HitRecord intersect_w_ray(Ray& ray, Transform& transform, double t);
+    HitRecord& intersect_w_ray(Ray& ray, Transform& transform, HitRecord& record);
 };

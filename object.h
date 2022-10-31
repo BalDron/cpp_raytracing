@@ -1,8 +1,3 @@
-struct IntersectionInfo{
-    int ind;
-    double t;
-};
-
 class Object{
 private:
     int index;
@@ -42,8 +37,8 @@ public:
     void rem_obj(int ind);
     int find_camera();
 
-    IntersectionInfo check_intersections(Ray& ray);
-    HitRecord intersect(Ray& ray, double t, int ind);
+    HitRecord& check_intersections(Ray& ray, HitRecord& record);
+    HitRecord& intersect(Ray& ray, HitRecord& record);
     void set_bg(Color& bg);
     Color get_bg();
     void set_light(int ind, double force);

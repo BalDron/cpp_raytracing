@@ -136,42 +136,24 @@ void World::rem_obj(int ind){
     objects.erase(objects.begin() + ind - 1);
 }
 
-IntersectionInfo World::check_intersections(Ray& ray){
-    double t, tmp_t;
-    int ind;
-    t = -1.0;
+HitRecord& World::check_intersections(Ray& ray, HitRecord& record){
+    double tmp_t;
+    record.t = -1.0;
     for (int i = 0; i < size(); ++i){
         if (!objects[i]->get_camera().check_active() && !objects[i]->check_light()){
             tmp_t = objects[i]->get_shape().check_intersection(ray, objects[i]->get_transform());
-            if ((tmp_t > 0.0 && tmp_t < t) || t < 0.0){
-                t = tmp_t;
-                ind = objects[i]->get_ind();
+            if ((tmp_t > 0.0 && tmp_t < record.t) || record.t < 0.0){
+                record.t = tmp_t;
+                record.ind = objects[i]->get_ind();
             }
         }
     }
-    return {ind, t};
+    return record;
 }
 
-HitRecord World::intersect(Ray& ray, double t, int ind){
-    HitRecord record, temp;
-    // bool record_empty = true;
-    // for (int i = 0; i < size(); ++i){
-    //     if (!objects[i]->get_camera().check_active() && !objects[i]->check_light()){
-    //         double t = objects[i]->get_shape().check_intersection(
-    //                 ray, objects[i]->get_transform());
-    //         if (t > 0.0){
-    //             // std::cout << "int " << i << std::endl;
-    //             temp = objects[i]->get_shape().intersect_w_ray(
-    //                     ray, objects[i]->get_transform(), t);
-    //             if (record_empty || temp.t <= record.t){
-    //                 record = temp;
-    //                 record_empty = false;
-    //             }
-    //         }
-    //     }
-    // }
-    record = objects[ind]->get_shape().intersect_w_ray(
-         ray, objects[ind]->get_transform(), t);
+HitRecord& World::intersect(Ray& ray, HitRecord& record){
+    record = objects[record.ind]->get_shape().intersect_w_ray(
+         ray, objects[record.ind]->get_transform(), record);
     return record;
 }
 

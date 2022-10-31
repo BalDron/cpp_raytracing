@@ -4,7 +4,9 @@ private:
 public:
     Color();
     Color(int r, int g, int b);
+    Color(double r, double g, double b);
     Color(const Color& col);
+    ~Color();
     void set(int r, int g, int b);
 
     void check_bound();
@@ -17,6 +19,7 @@ public:
     Color operator+(Color& col);
     Color operator-(Color& col);
     Color operator*(int mul);
+    Color operator*(double mul);
     Color operator/(int mul);
 
     Color& operator=(const Color& col);

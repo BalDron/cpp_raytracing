@@ -135,18 +135,18 @@ vector<double> Shape::sphere_count_abcd(Ray& ray, Vector3& pos){
 
 double Shape::check_intersection(Ray& ray, Transform& transform){
     vector<double> abcd = sphere_count_abcd(ray, transform.pos());
-    if (abcd[3] > 0.0){
-        return (-abcd[1] - std::pow(abcd[3], 0.5)) / (2.0 * abcd[0]);
+    double t = (-abcd[1] - std::pow(abcd[3], 0.5)) / (2.0 * abcd[0]);
+    if (abcd[3] > 0.0 && t > 0.001){
+        return t;
     }
     return -1.0;
 }
 
-HitRecord Shape::intersect_w_ray(Ray& ray, Transform& transform, double t){
-    HitRecord record;
-    record.hit_point = ray.at(t);
+HitRecord& Shape::intersect_w_ray(Ray& ray, Transform& transform, HitRecord& record){
+    record.hit_point = ray.at(record.t);
     record.hit_normal = record.hit_point - transform.pos();
     record.hit_normal.unite();
-    record.t = t;
+    // record.hit_point = record.hit_point - record.hit_normal * 0.01;
     record.color = color;
     return record;
 }

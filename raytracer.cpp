@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <cmath>
 #include <string>
 #include <vector>
     using std::vector;
@@ -17,25 +18,61 @@
 
 #include "raytracer.h"
 
-Raytracer::Raytracer(int res_x, int res_y){
+Raytracer::Raytracer(int res_x, int res_y, int depth){
     resolution_x = res_x;
     resolution_y = res_y;
+    ray_depth = depth;
     colors = vector<vector<Color>>(res_y);
     for (int i = 0; i < res_y; ++i){
         colors[i].resize(res_x);
     }
 }
 
-Color Raytracer::cast_ray(Ray& ray, World& objs, int depth){
+Vector3 Raytracer::reflect(Vector3& ray_dir, Vector3& normal){
+    return ray_dir - normal / 2 * std::abs(dot(ray_dir, normal));
+}
+
+Color Raytracer::cast_ray(Ray& ray, World& objs, int depth, HitRecord prev_rec = HitRecord()){
+    // if (prev_rec.hit_normal.len() > 0.0){
+    //     prev_rec.hit_normal.print();
+    // }
     HitRecord record;
-    bool there_are_intersections;
-    there_are_intersections = objs.check_intersections(ray);
-    // std::cout << ray.get_origin()[0] << " " << ray.get_origin()[1] << " " << ray.get_origin()[2] << "\n";
-    if (there_are_intersections){
-        record = objs.intersect(ray);
+    IntersectionInfo info;
+    info = objs.check_intersections(ray);
+    if (info.t > 0.0){
+        record = objs.intersect(ray, info.t, info.ind);
+        if (depth < ray_depth && record.hit_point != prev_rec.hit_point){
+            Ray new_ray{record.hit_point, reflect(ray.get_direction(), record.hit_normal)};
+            Color addit_col = cast_ray(new_ray, objs, depth + 1, record) / 2;
+            record.color = record.color / 2 + addit_col;
+        }
     } else {
-        record.t = -1.0;
-        record.color = objs.get_bg();
+        if (depth > 0){
+            record.color.set(0, 0, 0);
+            for (int i = 0; i < objs.lights_number(); ++i){
+                Vector3 ray_to_light = objs.get_light(i).get_transform().pos() - ray.get_origin();
+                double d = dot(ray_to_light, prev_rec.hit_normal);
+                if (d > 0.0){
+                    Ray to_light{ray.get_origin(), ray_to_light};
+                    Color tmp_col;
+                    info = objs.check_intersections(to_light);
+                    if (info.t < 0.0){
+                        tmp_col = prev_rec.color * objs.get_light(i).get_light_force();
+                        tmp_col = tmp_col * d;
+                        record.color = record.color + tmp_col;
+                    } else {
+                        HitRecord tmp_rec = objs.intersect(to_light, info.t, info.ind);
+                        tmp_rec.color = tmp_rec.color * 0.25;
+                        tmp_rec.color = prev_rec.color * 0.25 + tmp_rec.color;
+                        record.color = record.color + tmp_rec.color;
+                    }
+                } else {
+                    record.color.set(0, 0, 0);
+                }
+            }
+        } else {
+            record.color = objs.get_bg();
+        }
     }
     return record.color;
 }

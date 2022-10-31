@@ -15,6 +15,10 @@ Color::Color(int r, int g, int b):
     check_bound();
 }
 
+Color::Color(const Color& col):
+    rgb{vector<int>{col.r(), col.g(), col.b()}}
+{}
+
 void Color::check_bound(){
     for (int& i: rgb){
         if (i > 255){
@@ -32,23 +36,27 @@ void Color::set(int r, int g, int b){
     check_bound();
 }
 
-int Color::r(){
-    return rgb[0];
+int Color::r() const{
+    int ret_r = rgb[0];
+    return ret_r;
 }
 
-int Color::g(){
-    return rgb[1];
+int Color::g() const{
+    int ret_g = rgb[1];
+    return ret_g;
 }
 
-int Color::b(){
-    return rgb[2];
+int Color::b() const{
+    int ret_b = rgb[2];
+    return ret_b;
 }
 
-int Color::operator[](int i){
-    return rgb[i];
+int Color::operator[](int i) const{
+    int ret_i = rgb[i];
+    return ret_i;
 }
 
-Color Color::operator+(Color col){
+Color Color::operator+(Color& col){
     Color ret = Color(  rgb[0] + col[0],
                         rgb[1] + col[1],
                         rgb[2] + col[2]);
@@ -56,7 +64,7 @@ Color Color::operator+(Color col){
     return ret;
 }
 
-Color Color::operator-(Color col){
+Color Color::operator-(Color& col){
     Color ret = Color(  rgb[0] + col[0],
                         rgb[1] + col[1],
                         rgb[2] + col[2]);
@@ -78,4 +86,12 @@ Color Color::operator/(int mul){
                         rgb[2] / mul);
     ret.check_bound();
     return ret;
+}
+
+Color& Color::operator=(const Color& col){
+    rgb.clear();
+    rgb.push_back(col.r());
+    rgb.push_back(col.g());
+    rgb.push_back(col.b());
+    return *this;
 }

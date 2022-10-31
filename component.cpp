@@ -126,42 +126,27 @@ vector<double> Shape::sphere_count_abcd(Ray& ray, Vector3& pos){
     Vector3 ray_orig = ray.get_origin();
     Vector3 ray_dir = ray.get_direction();
     double a = dot(ray_dir, ray_dir);
-    double b = 2 * dot(ray_dir, ray_orig - pos);
-    double c = dot(ray_orig - pos, ray_orig - pos) - sphere_radius * sphere_radius;
+    Vector3 tmp = ray_orig - pos;
+    double b = 2 * dot(ray_dir, tmp);
+    double c = dot(tmp, tmp) - sphere_radius * sphere_radius;
     double d = b * b - 4.0 * a * c;
     return {a, b, c, d};
 }
 
-bool Shape::check_intersection(Ray& ray, Transform& transform){
+double Shape::check_intersection(Ray& ray, Transform& transform){
     vector<double> abcd = sphere_count_abcd(ray, transform.pos());
-    if (abcd[3] >= 0.0) return true;
-    return false;
+    if (abcd[3] > 0.0){
+        return (-abcd[1] - std::pow(abcd[3], 0.5)) / (2.0 * abcd[0]);
+    }
+    return -1.0;
 }
 
-HitRecord Shape::intersect_w_ray(Ray& ray, Transform& transform){
-    vector<double> abcd  = sphere_count_abcd(ray, transform.pos());
-    double t;
-    Vector3 hit_point;
-    Vector3 hit_normal;
+HitRecord Shape::intersect_w_ray(Ray& ray, Transform& transform, double t){
     HitRecord record;
-    if (abcd[3] == 0.0){
-        t = -abcd[1] / (2 * abcd[0]);
-    } else {
-        double t1;
-        double t2;
-        t1 = (-abcd[1] + std::pow(abcd[3], 0.5)) / (2.0 * abcd[0]);
-        t2 = (-abcd[1] - std::pow(abcd[3], 0.5)) / (2.0 * abcd[0]);
-        if (t2 >= 0.0){
-            t = t2;
-        } else {
-            t = t1;
-        }
-    }
-    hit_point = ray.at(t);
-    hit_normal = unit_vector(hit_point - transform.pos());
+    record.hit_point = ray.at(t);
+    record.hit_normal = record.hit_point - transform.pos();
+    record.hit_normal.unite();
     record.t = t;
-    record.hit_point = hit_point;
-    record.hit_normal = hit_normal;
     record.color = color;
     return record;
 }

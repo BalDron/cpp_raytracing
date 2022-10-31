@@ -72,6 +72,6 @@ public:
     void set_color(Color& col);
     void set_rad(double rad);
     Color& get_color();
-    bool check_intersection(Ray& ray, Transform& transform);
-    HitRecord intersect_w_ray(Ray& ray, Transform& transform);
+    double check_intersection(Ray& ray, Transform& transform);
+    HitRecord intersect_w_ray(Ray& ray, Transform& transform, double t);
 };

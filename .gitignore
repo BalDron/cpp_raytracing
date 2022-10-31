@@ -3,3 +3,5 @@ main.cpp
 *.o
 main
 build*
+*bmp
+*png

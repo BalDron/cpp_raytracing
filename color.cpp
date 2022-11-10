@@ -4,23 +4,17 @@
 #include "color.h"
 
 Color::Color():
-    rgb{vector<int>{0, 0, 0}}
+    rgb{vector<double>{0, 0, 0}}
 {}
 
-Color::Color(int r, int g, int b):
-    rgb{vector<int>{r, g, b}}
-{
-    // check_bound();
-}
-
 Color::Color(double r, double g, double b):
-    rgb{vector<int>{int(r), int(g), int(b)}}
+    rgb{vector<double>{r, g, b}}
 {
     // check_bound();
 }
 
 Color::Color(const Color& col):
-    rgb{vector<int>{col.r(), col.g(), col.b()}}
+    rgb{vector<double>{col.r(), col.g(), col.b()}}
 {}
 
 Color::~Color(){
@@ -37,31 +31,49 @@ void Color::check_bound(){
     }
 }
 
-void Color::set(int r, int g, int b){
+void Color::set(double r, double g, double b){
     rgb[0] = r;
     rgb[1] = g;
     rgb[2] = b;
     // check_bound();
 }
 
-int Color::r() const{
-    int ret_r = rgb[0];
+double Color::r() const{
+    double ret_r = rgb[0];
     return ret_r;
 }
 
-int Color::g() const{
-    int ret_g = rgb[1];
+double Color::g() const{
+    double ret_g = rgb[1];
     return ret_g;
 }
 
-int Color::b() const{
-    int ret_b = rgb[2];
+double Color::b() const{
+    double ret_b = rgb[2];
     return ret_b;
 }
 
-int Color::operator[](int i) const{
-    int ret_i = rgb[i];
+double Color::operator[](int i) const{
+    double ret_i = rgb[i];
     return ret_i;
+}
+
+void Color::lighten(double lr, double lg, double lb){
+    rgb[0] = rgb[0] * lr;
+    rgb[1] = rgb[1] * lg;
+    rgb[2] = rgb[2] * lb;
+}
+
+void Color::lighten(double l){
+    rgb[0] = rgb[0] * l;
+    rgb[1] = rgb[1] * l;
+    rgb[2] = rgb[2] * l;
+}
+
+void Color::lighten(Color l){
+    rgb[0] = rgb[0] * l[0] / 255.0;
+    rgb[1] = rgb[1] * l[1] / 255.0;
+    rgb[2] = rgb[2] * l[2] / 255.0;
 }
 
 Color Color::operator+(Color& col){
@@ -80,7 +92,7 @@ Color Color::operator-(Color& col){
     return ret;
 }
 
-Color Color::operator*(int mul){
+Color Color::operator*(double mul){
     Color ret = Color(  rgb[0] * mul,
                         rgb[1] * mul,
                         rgb[2] * mul);
@@ -88,15 +100,7 @@ Color Color::operator*(int mul){
     return ret;
 }
 
-Color Color::operator*(double mul){
-    Color ret = Color(  double(rgb[0]) * mul,
-                        double(rgb[1]) * mul,
-                        double(rgb[2]) * mul);
-    // ret.check_bound();
-    return ret;
-}
-
-Color Color::operator/(int mul){
+Color Color::operator/(double mul){
     Color ret = Color(  rgb[0] / mul,
                         rgb[1] / mul,
                         rgb[2] / mul);

@@ -6,6 +6,7 @@ private:
     Camera camera;
     Transform transform;
     Shape shape;
+    Material material;
 public:
     Object(int ind, Vector3& pos);
     Object(int ind);
@@ -17,6 +18,7 @@ public:
     Camera& get_camera();
     Shape& get_shape();
     Transform& get_transform();
+    Material& get_material();
     double get_light_force();
 };
 

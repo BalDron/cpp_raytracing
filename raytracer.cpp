@@ -29,54 +29,43 @@ Raytracer::Raytracer(int res_x, int res_y, int depth){
 }
 
 Vector3 Raytracer::reflect(Vector3& ray_dir, Vector3& normal){
-    return ray_dir - normal / 2 * std::abs(dot(ray_dir, normal));
+    return -ray_dir + normal / 2 * std::abs(dot(ray_dir, normal));
 }
 
 Color Raytracer::cast_ray(Ray& ray, World& objs, int depth, HitRecord& prev_rec){
-    // if (prev_rec.hit_normal.len() > 0.0){
-    //     prev_rec.hit_normal.print();
-    // }
     HitRecord record;
     record = objs.check_intersections(ray, record);
-    if (record.t > 0.0){
+    record.color.set(0, 0, 0);
+    if (record.t > 0.0 && depth <= ray_depth){
         record = objs.intersect(ray, record);
-        if (depth < ray_depth){
-            Ray new_ray{record.hit_point, reflect(ray.get_direction(), record.hit_normal)};
-            Color addit_col = cast_ray(new_ray, objs, depth + 1, record)/2;
-            record.color = addit_col;
-            // record.color = record.color;
-            // record.color = record.color / 2 + addit_col;
-        }
-    } else {
-        if (depth > 0){
-            record.color.set(0, 0, 0);
-            for (int i = 0; i < objs.lights_number(); ++i){
-                Vector3 ray_to_light = objs.get_light(i).get_transform().pos() - ray.get_origin();
-                double d = dot(ray_to_light, prev_rec.hit_normal);
-                if (d >= 0.0){
-                    Ray to_light{ray.get_origin(), ray_to_light};
-                    Color tmp_col;
-                    record = objs.check_intersections(to_light, record);
-                    if (record.t <= 0.0){
-                        tmp_col = prev_rec.color * (objs.get_light(i).get_light_force()* d);
-                        record.color = record.color + tmp_col;
-                    } else {
-                        // HitRecord tmp_rec;
-                        // tmp_rec.t = record.t;
-                        // tmp_rec.ind = record.ind;
-                        // tmp_rec = objs.intersect(to_light, record);
-                        // tmp_rec.color = tmp_rec.color * 0.25;
-                        // tmp_rec.color = prev_rec.color * 0.25 + tmp_rec.color;
-                        // record.color = record.color + tmp_rec.color;
+        Ray new_ray{record.hit_point, reflect(ray.get_direction(), record.hit_normal)};
+        Color addit_col = cast_ray(new_ray, objs, depth + 1, record);
+        record.color.lighten(addit_col * objs[record.ind].get_material().get_self());
+        addit_col = addit_col * objs[record.ind].get_material().get_mirror();
+        record.color = record.color + addit_col;
+        // if (prev_rec.ind == 1 && record.ind == 2 && record.color.r() == 0 && record.color.b() == 0 && record.color.g() == 0){
+        //     std::cout << "bingo\n";
+        // }
 
-                        tmp_col = prev_rec.color * 0.5;
-                        record.color = record.color + tmp_col;
-                    }
+    } else if (depth == 0){
+            record.color = objs.get_bg();
+    } else if (depth <= ray_depth){
+        for (int i = 0; i < objs.lights_number(); ++i){
+            Vector3 ray_to_light = objs.get_light(i).get_transform().pos() - ray.get_origin();
+            ray_to_light.unite();
+            double d = dot(ray_to_light, prev_rec.hit_normal);
+            if (d > 0.0){
+                Ray to_light{ray.get_origin(), ray_to_light};
+                record = objs.check_intersections(to_light, record);
+                Color tmp_col;
+                if (record.t <= 0.0){
+                    tmp_col = objs.get_bg();
+                    tmp_col.lighten(objs.get_light(i).get_light_force() * d / 255.0);
+                    record.color = record.color + tmp_col;
                 }
             }
-        } else {
-            record.color = objs.get_bg();
         }
+
     }
     return record.color;
 }

@@ -2,6 +2,7 @@ enum class Component_name{
     transform,
     camera,
     shape,
+    material
 };
 
 enum class Shape_type{
@@ -75,4 +76,19 @@ public:
     Color& get_color();
     double check_intersection(Ray& ray, Transform& transform);
     HitRecord& intersect_w_ray(Ray& ray, Transform& transform, HitRecord& record);
+};
+
+
+class Material: public Component{
+private:
+    double self;
+    double mirror;
+    double glass;
+public:
+    Material();
+    Material(double s, double m);
+    double get_self();
+    double get_mirror();
+    double get_glass();
+    void set(double s, double m, double g);
 };

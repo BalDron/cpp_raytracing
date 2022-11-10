@@ -123,8 +123,8 @@ Color& Shape::get_color(){
 }
 
 vector<double> Shape::sphere_count_abcd(Ray& ray, Vector3& pos){
-    Vector3 ray_orig = ray.get_origin();
-    Vector3 ray_dir = ray.get_direction();
+    Vector3& ray_orig = ray.get_origin();
+    Vector3& ray_dir = ray.get_direction();
     double a = dot(ray_dir, ray_dir);
     Vector3 tmp = ray_orig - pos;
     double b = 2 * dot(ray_dir, tmp);
@@ -136,7 +136,7 @@ vector<double> Shape::sphere_count_abcd(Ray& ray, Vector3& pos){
 double Shape::check_intersection(Ray& ray, Transform& transform){
     vector<double> abcd = sphere_count_abcd(ray, transform.pos());
     double t = (-abcd[1] - std::pow(abcd[3], 0.5)) / (2.0 * abcd[0]);
-    if (abcd[3] > 0.0 && t > 0.001){
+    if (abcd[3] > 0.0 && t > 0.01){
         return t;
     }
     return -1.0;
@@ -149,4 +149,33 @@ HitRecord& Shape::intersect_w_ray(Ray& ray, Transform& transform, HitRecord& rec
     // record.hit_point = record.hit_point - record.hit_normal * 0.01;
     record.color = color;
     return record;
+}
+
+
+Material::Material():
+    Component{Component_name::material},
+    self{1.0}, mirror{0.0}, glass{0.0}
+{}
+
+Material::Material(double s, double m):
+    Component{Component_name::material},
+    self{s}, mirror{m}, glass{1.0 - s - m}
+{}
+
+double Material::get_self(){
+    return self;
+}
+
+double Material::get_mirror(){
+    return mirror;
+}
+
+double Material::get_glass(){
+    return glass;
+}
+
+void Material::set(double s, double m, double g){
+    self = s;
+    mirror = m;
+    glass = g;
 }

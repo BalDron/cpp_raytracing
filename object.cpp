@@ -34,12 +34,16 @@ Transform& Object::get_transform(){
     return transform;
 }
 
+Material& Object::get_material(){
+    return material;
+}
+
 Object::Object(int ind, Vector3& pos){
     index = ind;
     transform = Transform(pos);
     camera = Camera();
     shape = Shape();
-
+    material = Material();
 }
 
 Object::Object(int ind):
@@ -142,7 +146,7 @@ HitRecord& World::check_intersections(Ray& ray, HitRecord& record){
     for (int i = 0; i < size(); ++i){
         if (!objects[i]->get_camera().check_active() && !objects[i]->check_light()){
             tmp_t = objects[i]->get_shape().check_intersection(ray, objects[i]->get_transform());
-            if ((tmp_t > 0.0 && tmp_t < record.t) || record.t < 0.0){
+            if (tmp_t > 0.0 && (tmp_t < record.t || record.t < 0.0)){
                 record.t = tmp_t;
                 record.ind = objects[i]->get_ind();
             }

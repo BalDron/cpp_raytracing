@@ -6,6 +6,11 @@
     using std::vector;
 #include <stdexcept>
     using std::runtime_error;
+#include <cstdlib>
+#include <thread>
+    using std::thread;
+#include <functional>
+    using std::ref;
 
 #include <iostream>
     using std::cout;
@@ -29,78 +34,129 @@ Raytracer::Raytracer(int res_x, int res_y, int depth){
 }
 
 Vector3 Raytracer::reflect(Vector3& ray_dir, Vector3& normal){
-    return -ray_dir + normal / 2 * std::abs(dot(ray_dir, normal));
+    ray_dir.unite();
+    return ray_dir - normal * (2.0 * dot(ray_dir, normal));
 }
 
-Color Raytracer::cast_ray(Ray& ray, World& objs, int depth, HitRecord& prev_rec){
+Color Raytracer::cast_ray(Ray& ray, World& objs, int depth){
     HitRecord record;
     record = objs.check_intersections(ray, record);
-    record.color.set(0, 0, 0);
+    record.color = objs.get_bg();
+    Color self_col = objs.get_bg();
+    double self_mul = 1.0;
+    Color addit_col{0, 0, 0};
     if (record.t > 0.0 && depth <= ray_depth){
         record = objs.intersect(ray, record);
-        Ray new_ray{record.hit_point, reflect(ray.get_direction(), record.hit_normal)};
-        Color addit_col = cast_ray(new_ray, objs, depth + 1, record);
-        record.color.lighten(addit_col * objs[record.ind].get_material().get_self());
+        self_col = record.color;
+        self_mul = objs[record.ind].get_material().get_self();
+        Vector3 refl_v = reflect(ray.get_direction(), record.hit_normal);
+        Ray new_ray{record.hit_point, refl_v};
+        addit_col = cast_ray(new_ray, objs, depth + 1);
         addit_col = addit_col * objs[record.ind].get_material().get_mirror();
-        record.color = record.color + addit_col;
-        // if (prev_rec.ind == 1 && record.ind == 2 && record.color.r() == 0 && record.color.b() == 0 && record.color.g() == 0){
-        //     std::cout << "bingo\n";
-        // }
 
-    } else if (depth == 0){
-            record.color = objs.get_bg();
-    } else if (depth <= ray_depth){
+        bool is_lit = false;
         for (int i = 0; i < objs.lights_number(); ++i){
-            Vector3 ray_to_light = objs.get_light(i).get_transform().pos() - ray.get_origin();
-            ray_to_light.unite();
-            double d = dot(ray_to_light, prev_rec.hit_normal);
+            Vector3 vec_to_light = objs.get_light(i).get_transform().pos() - ray.at(record.t);
+            vec_to_light.unite();
+            double d = dot(vec_to_light, record.hit_normal);
             if (d > 0.0){
-                Ray to_light{ray.get_origin(), ray_to_light};
-                record = objs.check_intersections(to_light, record);
-                Color tmp_col;
-                if (record.t <= 0.0){
-                    tmp_col = objs.get_bg();
-                    tmp_col.lighten(objs.get_light(i).get_light_force() * d / 255.0);
-                    record.color = record.color + tmp_col;
+                is_lit = true;
+                Ray ray_to_light{ray.get_origin(), vec_to_light};
+                HitRecord new_record;
+                new_record = objs.check_intersections(ray_to_light, new_record);
+                if (new_record.t < 0.0){
+                    self_col.lighten(objs.get_light(i).get_light_force() * d / 255.0);
                 }
             }
         }
-
+        if (!is_lit && record.t > 0){
+            record.color.set(0, 0, 0);
+            self_col.set(0, 0, 0);
+        }
     }
+    record.color = self_col * self_mul + addit_col;
     return record.color;
 }
 
-int Raytracer::make_step(World& objs){
+
+void Raytracer::make_concurrent_step(World& objs, int start, int step){
     int cam_ind = objs.find_camera();
     if (cam_ind == -1){
         throw runtime_error(
             "Raytracer.make_step(): There is no camera");
     }
     int cam = objs.find_camera();
-    HitRecord hit;
-    hit.t = 0.0;
-    hit.ind = 0;
-    hit.color = Color();
-    hit.hit_point = Vector3();
-    hit.hit_normal = Vector3(1.0, 1.0, 1.0);
     Color clr;
-    for (int i = 0; i < resolution_y; ++i){
+    for (int i = start; i < resolution_y; i += step){
         for (int j = 0; j < resolution_x; ++j){
-            double ny = (double) i / resolution_y;
-            double nx = (double) j / resolution_x;
-            Ray ray = objs[cam].get_camera().get_ray(
-                nx, ny,
-                objs[cam].get_transform()
-            );
-            // std::cout << ray.get_direction()[0] << " " << ray.get_direction()[1] << " " << ray.get_direction()[2] << "\n";
-            clr = cast_ray(ray, objs, 0, hit);
             colors[i][j].set(0, 0, 0);
-            colors[i][j] = colors[i][j] + clr;
+            int ns = 1;
+            int max = 1;
+            for (int k = 0; k < ns; ++k){
+                double rand_num1, rand_num2;
+                rand_num1 = double(std::rand()%max)/ double(max);
+                rand_num2 = double(std::rand()%max)/ double(max);
+                double ny = (double (i) + rand_num1) / double(resolution_y);
+                double nx = (double (j) + rand_num2) / double(resolution_x);
+                Ray ray = objs[cam].get_camera().get_ray(
+                    nx, ny,
+                    objs[cam].get_transform()
+                );
+                clr = cast_ray(ray, objs, 0);
+                colors[i][j] = colors[i][j] + clr;
+            }
+            colors[i][j] = colors[i][j] / double(ns);
         }
     }
-    return 0;
+}
+
+
+void Raytracer::make_step(World& objs){
+    vector<int> starts{0, 1, 2, 3, 4};
+    int step = 5;
+
+    thread t1 { &Raytracer::make_concurrent_step, this, ref(objs), starts[0], step };
+    thread t2 { &Raytracer::make_concurrent_step, this, ref(objs), starts[1], step };
+    thread t3 { &Raytracer::make_concurrent_step, this, ref(objs), starts[2], step };
+    thread t4 { &Raytracer::make_concurrent_step, this, ref(objs), starts[3], step };
+    thread t5 { &Raytracer::make_concurrent_step, this, ref(objs), starts[4], step };
+
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
+    t5.join();
 }
 
 vector<vector<Color>>& Raytracer::get_image(){
     return colors;
+}
+
+void Raytracer::soften_image(){
+    double neighbor = 2.0/18.0;
+    double far_neighbor = 2.0/36.0;
+    double center = 1.0 - 4 * neighbor - 4 * far_neighbor;
+    vector<vector<Color>> new_c;
+    new_c.resize(resolution_y);
+    for (int i = 0; i < resolution_y; ++i){
+        new_c[i].resize(resolution_x);
+    }
+    std::cout << "done\n";
+
+    for (int i = 1; i < resolution_y - 1; ++i){
+        for (int j = 1; j < resolution_x - 1; ++j){
+            new_c[i][j] = colors[i][j] * center;
+            new_c[i][j] = new_c[i][j] +
+                (colors[i-1][j] + colors[i+1][j] + colors[i][j-1] + colors[i][j+1]) * neighbor +
+                (colors[i-1][j-1] + colors[i+1][j+1] + colors[i+1][j-1] + colors[i-1][j+1]) * far_neighbor;
+        }
+    }
+    for (int i = 1; i < resolution_y - 1; ++i){
+        for (int j = 1; j < resolution_x - 1; ++j){
+            colors[i][j] = new_c[i][j];
+        }
+        new_c[i].clear();
+    }
+    new_c.clear();
+
 }

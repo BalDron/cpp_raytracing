@@ -124,16 +124,24 @@ void Vector3::unite(){
     set_z(z()/len());
 }
 
-void Vector3::print(){
-    std::cout << x() << " " << y() << " " << z() << "\n";
+Vector3 unit_vector(Vector3& vec){
+    return vec / vec.len();
 }
 
 double dot(Vector3& vec1, Vector3& vec2){
     return vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2];
 }
 
-Vector3 unit_vector(Vector3& vec){
-    return vec / vec.len();
+Vector3 cross(const Vector3& v1, const Vector3& v2){
+    Vector3 v0;
+    v0 =    Vector3(1, 0, 0) * (v1.y()*v2.z() - v1.z()*v2.y()) -
+            Vector3(0, 1, 0) * (v1.x()*v2.z() - v1.z()*v2.x()) +
+            Vector3(0, 0, 1) * (v1.x()*v2.y() - v1.y()*v2.x());
+    return v0;
+}
+
+void Vector3::print(){
+    std::cout << x() << " " << y() << " " << z() << "\n";
 }
 
 void Vector3::clean(){

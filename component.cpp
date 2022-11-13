@@ -75,7 +75,6 @@ Ray Camera::get_ray(double nx, double ny, Transform& transform){
             "Camera.get_ray: inactive camera"
         );
     }
-
     Vector3 direction = (   ll_corner - transform.pos() +
                             vertical * ny +
                             horisontal * nx);
@@ -102,24 +101,94 @@ Shape::Shape():
     Component{Component_name::shape}
 {}
 
+Shape::Shape(Shape_type t):
+    Component{Component_name::shape},
+    type{t}
+{}
+
 Shape::Shape(Color col, double rad):
     Component{Component_name::shape},
-    type{Shape_type::circle},
+    type{Shape_type::sphere},
     sphere_radius{rad},
     color{col}
 {}
+
+Shape::Shape(Color col, Vector3 n):
+    Component{Component_name::shape},
+    type{Shape_type::plane},
+    color{col}
+{
+    params.push_back(n);
+}
+
+Shape::Shape(Color col, vector<Vector3> coords):
+    Component{Component_name::shape},
+    type{Shape_type::triangle},
+    color{col}
+{
+    for (auto i: coords){
+        params.push_back(i);
+    }
+}
+
+Shape::~Shape(){
+    params.clear();
+}
+
+void Shape::set_type(Shape_type t){
+    type = t;
+}
 
 void Shape::set_color(Color& col){
     color.set(col.r(), col.g(), col.b());
 }
 
 void Shape::set_rad(double rad){
+    if (type != Shape_type::sphere){
+        throw std::runtime_error(
+            "Shape.set_rad(): not a "
+        );
+    }
     sphere_radius = rad;
+}
+
+void Shape::set_params(vector<Vector3>& p){
+    params.clear();
+    for (auto& i: p){
+        params.push_back(i);
+    }
+}
+
+void Shape::add_param(Vector3& p){
+    params.push_back(p);
+}
+
+void Shape::clear_params(){
+    params.clear();
 }
 
 Color& Shape::get_color(){
     std::cout << color.r() << " " << color.g() << " " << color.b() << "\n";
     return color;
+}
+
+Vector3 Shape::get_normal(HitRecord& rec, Transform& transform){
+    Vector3 n;
+    switch (type) {
+        case Shape_type::sphere:
+            n = rec.hit_point - transform.pos();
+            break;
+        case Shape_type::plane:
+            n = params[0];
+            break;
+        case Shape_type::triangle:
+            Vector3 e0, e1;
+            e0 = params[1] - params[0];
+            e1 = params[2] - params[0];
+            n = cross(e0, e1);
+    }
+    n.unite();
+    return n;
 }
 
 vector<double> Shape::sphere_count_abcd(Ray& ray, Vector3& pos){
@@ -133,20 +202,70 @@ vector<double> Shape::sphere_count_abcd(Ray& ray, Vector3& pos){
     return {a, b, c, d};
 }
 
-double Shape::check_intersection(Ray& ray, Transform& transform){
+double Shape::check_sphere_intersection(Ray& ray, Transform& transform){
     vector<double> abcd = sphere_count_abcd(ray, transform.pos());
     double t = (-abcd[1] - std::pow(abcd[3], 0.5)) / (2.0 * abcd[0]);
-    if (abcd[3] > 0.0 && t > 0.01){
+    if (abcd[3] > 0.0 && t > 0.001){
         return t;
     }
     return -1.0;
 }
 
+double Shape::check_plane_intersection(Ray& ray, Transform& transform){
+    double d = -dot(params[0], transform.pos());
+    double t = -(dot(params[0], ray.get_origin()) + d) / (dot(params[0], ray.get_direction()));
+    if (t > 0.001){
+        return t;
+    }
+    return -1.0;
+}
+
+double Shape::check_triangle_intersection(Ray& ray, Transform& transform){
+    Vector3 v0, v1, v2;
+    v0 = params[0] + transform.pos();
+    v1 = params[1] + transform.pos();
+    v2 = params[2] + transform.pos();
+    Vector3 e0, e1, e2;
+    e0 = v1 - v0;
+    e1 = v2 - v1;
+    e2 = v0 - v2;
+    Vector3 n = cross(e0, e1);
+    n.unite();
+    double d = -dot(n, v0);
+    double t = -(dot(n, ray.get_origin()) + d) / dot(n, ray.get_direction());
+    v0 = ray.at(t) - v0;
+    v0 = cross(e0, v0);
+    v1 = ray.at(t) - v1;
+    v1 = cross(e1, v1);
+    v2 = ray.at(t) - v2;
+    v2 = cross(e2, v2);
+    if (    dot(n, v0) > 0.0 &&
+            dot(n, v1) > 0.0 &&
+            dot(n, v2) > 0.0 && t > 0.001){
+        return t;
+    }
+    return -1.0;
+}
+
+double Shape::check_intersection(Ray& ray, Transform& transform){
+    switch (type) {
+        case Shape_type::sphere:
+            return check_sphere_intersection(ray, transform);
+        case Shape_type::plane:
+            return check_plane_intersection(ray, transform);
+        case Shape_type::triangle:
+            return check_triangle_intersection(ray, transform);
+    }
+
+    return -1.0;
+}
+
+
+
 HitRecord& Shape::intersect_w_ray(Ray& ray, Transform& transform, HitRecord& record){
     record.hit_point = ray.at(record.t);
-    record.hit_normal = record.hit_point - transform.pos();
+    record.hit_normal = get_normal(record, transform);
     record.hit_normal.unite();
-    // record.hit_point = record.hit_point - record.hit_normal * 0.01;
     record.color = color;
     return record;
 }

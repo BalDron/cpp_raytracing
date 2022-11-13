@@ -7,11 +7,13 @@ Color::Color():
     rgb{vector<double>{0, 0, 0}}
 {}
 
+    Color::Color(double c):
+        rgb{vector<double>{c, c, c}}
+    {}
+
 Color::Color(double r, double g, double b):
     rgb{vector<double>{r, g, b}}
-{
-    // check_bound();
-}
+{}
 
 Color::Color(const Color& col):
     rgb{vector<double>{col.r(), col.g(), col.b()}}
@@ -35,7 +37,6 @@ void Color::set(double r, double g, double b){
     rgb[0] = r;
     rgb[1] = g;
     rgb[2] = b;
-    // check_bound();
 }
 
 double Color::r() const{
@@ -71,24 +72,23 @@ void Color::lighten(double l){
 }
 
 void Color::lighten(Color l){
-    rgb[0] = rgb[0] * l[0] / 255.0;
-    rgb[1] = rgb[1] * l[1] / 255.0;
-    rgb[2] = rgb[2] * l[2] / 255.0;
+    double av = (l[0] + l[1] + l[2])/3;
+    rgb[0] = rgb[0] * av / 255.0;
+    rgb[1] = rgb[1] * av / 255.0;
+    rgb[2] = rgb[2] * av / 255.0;
 }
 
-Color Color::operator+(Color& col){
+Color Color::operator+(Color col){
     Color ret = Color(  rgb[0] + col[0],
                         rgb[1] + col[1],
                         rgb[2] + col[2]);
-    // ret.check_bound();
     return ret;
 }
 
-Color Color::operator-(Color& col){
+Color Color::operator-(Color col){
     Color ret = Color(  rgb[0] + col[0],
                         rgb[1] + col[1],
                         rgb[2] + col[2]);
-    // ret.check_bound();
     return ret;
 }
 
@@ -96,7 +96,6 @@ Color Color::operator*(double mul){
     Color ret = Color(  rgb[0] * mul,
                         rgb[1] * mul,
                         rgb[2] * mul);
-    // ret.check_bound();
     return ret;
 }
 
@@ -104,7 +103,6 @@ Color Color::operator/(double mul){
     Color ret = Color(  rgb[0] / mul,
                         rgb[1] / mul,
                         rgb[2] / mul);
-    // ret.check_bound();
     return ret;
 }
 

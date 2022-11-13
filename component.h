@@ -6,7 +6,9 @@ enum class Component_name{
 };
 
 enum class Shape_type{
-    circle,
+    sphere,
+    plane,
+    triangle
 };
 
 struct HitRecord{
@@ -66,14 +68,27 @@ private:
     Color color;
     Shape_type type;
     double sphere_radius;
+    vector<Vector3> params;
 
     vector<double> sphere_count_abcd(Ray& ray, Vector3& pos);
 public:
     Shape();
-    Shape(Color color, double rad);
+    Shape(Shape_type t);
+    Shape(Color col, double rad); // sphere
+    Shape(Color col, Vector3 n); // plane
+    Shape(Color col, vector<Vector3> local_coords); // triangle
+    ~Shape();
+    void set_type(Shape_type t);
     void set_color(Color& col);
     void set_rad(double rad);
+    void set_params(vector<Vector3>& p);
+    void add_param(Vector3& p);
+    void clear_params();
     Color& get_color();
+    Vector3 get_normal(HitRecord& rec, Transform& transform);
+    double check_triangle_intersection(Ray& ray, Transform& transform);
+    double check_plane_intersection(Ray& ray, Transform& transform);
+    double check_sphere_intersection(Ray& ray, Transform& transform);
     double check_intersection(Ray& ray, Transform& transform);
     HitRecord& intersect_w_ray(Ray& ray, Transform& transform, HitRecord& record);
 };

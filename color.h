@@ -4,6 +4,7 @@ private:
 public:
     Color();
     Color(double r, double g, double b);
+    Color(double c);
     Color(const Color& col);
     ~Color();
     void set(double r, double g, double b);
@@ -18,8 +19,8 @@ public:
     void lighten(double l);
     void lighten(Color l);
 
-    Color operator+(Color& col);
-    Color operator-(Color& col);
+    Color operator+(Color col);
+    Color operator-(Color col);
     Color operator*(double mul);
     Color operator/(double mul);
 

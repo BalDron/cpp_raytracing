@@ -6,8 +6,10 @@ private:
     vector<vector<Color>> colors;
 public:
     Raytracer(int res_x, int rex_y, int depth);
-    int make_step(World& objs);
-    Color cast_ray(Ray& ray, World& objs, int depth, HitRecord& prev_rec);
+    void make_step(World& objs);
+    void make_concurrent_step(World& objs, int start, int step);
+    Color cast_ray(Ray& ray, World& objs, int depth);
     Vector3 reflect(Vector3& ray_dir, Vector3& normal);
     vector<vector<Color>>& get_image();
+    void soften_image();
 };

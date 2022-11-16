@@ -24,11 +24,11 @@ public:
     double z() const;
     double operator[](int i) const;
 
-    Vector3 operator+(const Vector3& vec);
-    Vector3 operator-(const Vector3& vec);
-    Vector3 operator-();
-    Vector3 operator*(double mul);
-    Vector3 operator/(double mul);
+    Vector3 operator+(const Vector3& vec) const;
+    Vector3 operator-(const Vector3& vec) const;
+    Vector3 operator-() const;
+    Vector3 operator*(double mul) const;
+    Vector3 operator/(double mul) const;
 
     bool operator!=(const Vector3 vec);
 

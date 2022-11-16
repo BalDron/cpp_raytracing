@@ -26,7 +26,7 @@ vector<T> read_from(ifstream& src, int num){
     return cont;
 }
 
-vector<int> world_camera(){
+vector<int> read_camera_config(){
     ifstream file;
     file.open("build.camera");
     int x, y, depth;
@@ -41,7 +41,7 @@ vector<int> world_camera(){
     return {x, y, depth};
 }
 
-void world_builder(World& objs){
+void read_world_config(World& objs){
     ifstream w_file;
     w_file.open("build.world");
     string tmp;
@@ -122,6 +122,7 @@ void world_builder(World& objs){
         objs.set_light(new_ind, force);
     }
 
+    // reading background
     clr.clear();
     for (int i = 0; i < 3; ++i){
         w_file >> tmp;
@@ -155,7 +156,7 @@ void put_it_out(vector<vector<Color>>& pixels, string filename){
 
 int main(){
     vector<int> resolution;
-    resolution = world_camera();
+    resolution = read_camera_config();
     World objs{};
     int new_ind = objs.new_obj();
     double screen_width = 3.0;
@@ -168,7 +169,7 @@ int main(){
     );
     objs[new_ind].get_camera().set_active();
 
-    world_builder(objs);
+    read_world_config(objs);
 
     Raytracer rt{resolution[0], resolution[1], resolution[2]};
     auto start = chrono::high_resolution_clock::now();

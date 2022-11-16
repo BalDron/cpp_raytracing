@@ -43,6 +43,12 @@ Vector3::~Vector3(){
     axis.clear();
 }
 
+void Vector3::set(double a, double b, double c){
+    axis[0] = a;
+    axis[1] = b;
+    axis[2] = c;
+}
+
 void Vector3::set_x(double a){
     axis[0] = a;
 }
@@ -75,34 +81,33 @@ double Vector3::operator[](int i) const{
     return ret_i;
 }
 
-Vector3 Vector3::operator+(const Vector3& vec){
-    return Vector3( axis[0] + vec[0],
-                    axis[1] + vec[1],
-                    axis[2] + vec[2]);
+Vector3 Vector3::operator+(const Vector3& vec) const{
+    return Vector3( x() + vec.x(),
+                    y() + vec.y(),
+                    z() + vec.z());
 }
 
-Vector3 Vector3::operator-(const Vector3& vec){
-    return Vector3( axis[0] - vec[0],
-                    axis[1] - vec[1],
-                    axis[2] - vec[2]);
+Vector3 Vector3::operator-(const Vector3& vec) const{
+    return Vector3( x() - vec.x(),
+                    y() - vec.y(),
+                    z() - vec.z());
 }
 
-Vector3 Vector3::operator-(){
-    return Vector3(-axis[0], -axis[1], -axis[2]);
+Vector3 Vector3::operator-() const{
+    return Vector3(-x(), -y(), -z());
 }
 
-Vector3 Vector3::operator*(double mul){
-    return Vector3( axis[0] * mul,
-                    axis[1] * mul,
-                    axis[2] * mul);
+Vector3 Vector3::operator*(double mul) const{
+    return Vector3( x() * mul,
+                    y() * mul,
+                    z() * mul);
 }
 
-Vector3 Vector3::operator/(double mul){
+Vector3 Vector3::operator/(double mul) const{
     if (mul == 0.0){
-
         throw std::runtime_error("Vector3 division by zero");
     }
-    return Vector3( axis[0] / mul, axis[1] / mul, axis[2] / mul);
+    return Vector3( x() / mul, y() / mul, z() / mul);
 }
 
 bool Vector3::operator!=(const Vector3 vec){
@@ -119,9 +124,10 @@ double Vector3::len(){
 }
 
 void Vector3::unite(){
-    set_x(x()/len());
-    set_y(y()/len());
-    set_z(z()/len());
+    double l = len();
+    set_x(x()/l);
+    set_y(y()/l);
+    set_z(z()/l);
 }
 
 Vector3 unit_vector(Vector3& vec){
@@ -134,9 +140,9 @@ double dot(Vector3& vec1, Vector3& vec2){
 
 Vector3 cross(const Vector3& v1, const Vector3& v2){
     Vector3 v0;
-    v0 =    Vector3(1, 0, 0) * (v1.y()*v2.z() - v1.z()*v2.y()) -
-            Vector3(0, 1, 0) * (v1.x()*v2.z() - v1.z()*v2.x()) +
-            Vector3(0, 0, 1) * (v1.x()*v2.y() - v1.y()*v2.x());
+    v0.set_x( (v1.y()*v2.z() - v1.z()*v2.y()));
+    v0.set_y(-(v1.x()*v2.z() - v1.z()*v2.x()));
+    v0.set_z( (v1.x()*v2.y() - v1.y()*v2.x()));
     return v0;
 }
 

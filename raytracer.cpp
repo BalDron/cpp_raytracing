@@ -40,41 +40,45 @@ Vector3 Raytracer::reflect(Vector3& ray_dir, Vector3& normal){
 
 Color Raytracer::cast_ray(Ray& ray, World& objs, int depth){
     HitRecord record;
-    record = objs.check_intersections(ray, record);
     record.color = objs.get_bg();
-    Color self_col = objs.get_bg();
-    double self_mul = 1.0;
-    Color addit_col{0, 0, 0};
+    record = objs.check_intersections(ray, record);
     if (record.t > 0.0 && depth <= ray_depth){
+        Color self_col;
+        Color refl_col;
+        double self_mul = 0.0;
+        double mirror = 0.0;
+        double light = 0.0;
+
         record = objs.intersect(ray, record);
         self_col = record.color;
         self_mul = objs[record.ind].get_material().get_self();
-        Vector3 refl_v = reflect(ray.get_direction(), record.hit_normal);
-        Ray new_ray{record.hit_point, refl_v};
-        addit_col = cast_ray(new_ray, objs, depth + 1);
-        addit_col = addit_col * objs[record.ind].get_material().get_mirror();
+        mirror = objs[record.ind].get_material().get_mirror();
 
-        bool is_lit = false;
+        Vector3 refl_v = reflect(ray.get_direction(), record.hit_normal);
+        refl_v.unite();
+        Ray new_ray{record.hit_point, refl_v};
+
+        refl_col = cast_ray(new_ray, objs, depth + 1);
+        light += mirror * (refl_col.r() + refl_col.g() + refl_col.b()) / (3 * 255.0);
+
         for (int i = 0; i < objs.lights_number(); ++i){
-            Vector3 vec_to_light = objs.get_light(i).get_transform().pos() - ray.at(record.t);
+            Vector3 vec_to_light = objs.get_light(i).get_transform().pos() - record.hit_point;
+            Vector3 vec_to_light_copy = vec_to_light;
             vec_to_light.unite();
             double d = dot(vec_to_light, record.hit_normal);
             if (d > 0.0){
-                is_lit = true;
-                Ray ray_to_light{ray.get_origin(), vec_to_light};
+                Ray ray_to_light;
+                ray_to_light.set_origin(record.hit_point);
+                ray_to_light.set_direction(vec_to_light);
                 HitRecord new_record;
                 new_record = objs.check_intersections(ray_to_light, new_record);
                 if (new_record.t < 0.0){
-                    self_col.lighten(objs.get_light(i).get_light_force() * d / 255.0);
+                    light += objs.get_light(i).get_light_force() * d / 255.0;
                 }
             }
         }
-        if (!is_lit && record.t > 0){
-            record.color.set(0, 0, 0);
-            self_col.set(0, 0, 0);
-        }
+        record.color = self_col * self_mul * light + refl_col * mirror;
     }
-    record.color = self_col * self_mul + addit_col;
     return record.color;
 }
 
@@ -141,8 +145,6 @@ void Raytracer::soften_image(){
     for (int i = 0; i < resolution_y; ++i){
         new_c[i].resize(resolution_x);
     }
-    std::cout << "done\n";
-
     for (int i = 1; i < resolution_y - 1; ++i){
         for (int j = 1; j < resolution_x - 1; ++j){
             new_c[i][j] = colors[i][j] * center;

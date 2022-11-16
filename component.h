@@ -85,7 +85,7 @@ public:
     void add_param(Vector3& p);
     void clear_params();
     Color& get_color();
-    Vector3 get_normal(HitRecord& rec, Transform& transform);
+    Vector3 get_normal(const HitRecord& rec, Transform& transform);
     double check_triangle_intersection(Ray& ray, Transform& transform);
     double check_plane_intersection(Ray& ray, Transform& transform);
     double check_sphere_intersection(Ray& ray, Transform& transform);

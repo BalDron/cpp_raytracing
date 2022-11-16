@@ -172,7 +172,7 @@ Color& Shape::get_color(){
     return color;
 }
 
-Vector3 Shape::get_normal(HitRecord& rec, Transform& transform){
+Vector3 Shape::get_normal(const HitRecord& rec, Transform& transform){
     Vector3 n;
     switch (type) {
         case Shape_type::sphere:
@@ -186,6 +186,7 @@ Vector3 Shape::get_normal(HitRecord& rec, Transform& transform){
             e0 = params[1] - params[0];
             e1 = params[2] - params[0];
             n = cross(e0, e1);
+            break;
     }
     n.unite();
     return n;

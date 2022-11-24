@@ -23,10 +23,11 @@
 
 #include "raytracer.h"
 
-Raytracer::Raytracer(int res_x, int res_y, int depth){
+Raytracer::Raytracer(int res_x, int res_y, int depth, int thr){
     resolution_x = res_x;
     resolution_y = res_y;
     ray_depth = depth;
+    threads = thr;
     colors = vector<vector<Color>>(res_y);
     for (int i = 0; i < res_y; ++i){
         colors[i].resize(res_x);
@@ -115,21 +116,12 @@ void Raytracer::make_concurrent_step(World& objs, int start, int step){
 }
 
 
-void Raytracer::make_step(World& objs){
-    vector<int> starts{0, 1, 2, 3, 4};
-    int step = 5;
-
-    thread t1 { &Raytracer::make_concurrent_step, this, ref(objs), starts[0], step };
-    thread t2 { &Raytracer::make_concurrent_step, this, ref(objs), starts[1], step };
-    thread t3 { &Raytracer::make_concurrent_step, this, ref(objs), starts[2], step };
-    thread t4 { &Raytracer::make_concurrent_step, this, ref(objs), starts[3], step };
-    thread t5 { &Raytracer::make_concurrent_step, this, ref(objs), starts[4], step };
-
-    t1.join();
-    t2.join();
-    t3.join();
-    t4.join();
-    t5.join();
+void Raytracer::make_step(World& objs, int level){
+    thread t { &Raytracer::make_concurrent_step, this, ref(objs), level, threads };
+    if (level < threads){
+        make_step(objs, level + 1);
+    }
+    t.join();
 }
 
 vector<vector<Color>>& Raytracer::get_image(){

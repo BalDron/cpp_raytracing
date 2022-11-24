@@ -14,7 +14,6 @@ using namespace std;
 #include "object.h"
 #include "raytracer.h"
 
-
 template<typename T>
 vector<T> read_from(ifstream& src, int num){
     vector<T> cont;
@@ -171,9 +170,10 @@ int main(){
 
     read_world_config(objs);
 
-    Raytracer rt{resolution[0], resolution[1], resolution[2]};
+    int threads = 6;
+    Raytracer rt{resolution[0], resolution[1], resolution[2], threads};
     auto start = chrono::high_resolution_clock::now();
-    rt.make_step(objs);
+    rt.make_step(objs, 0);
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
     cout << duration.count() << " ms" << endl;

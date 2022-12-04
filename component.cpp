@@ -11,25 +11,32 @@
 #include "ray.h"
 #include "component.h"
 
-Component::Component(Component_name n):
-    name{n}
-{}
 
-Component_name Component::get_name() const{
+void NamedComponent::set_name(Component_name n){
+    name = n;
+}
+
+Component_name NamedComponent::get_name() const {
     return name;
 }
 
+bool NamedComponent::check_name(Component_name n) const {
+    return name == n;
+}
+
 Transform::Transform():
-    Component{Component_name::transform},
     position{Vector3()},
     rotation{Vector3()}
-{}
+{
+    set_name(Component_name::transform);
+}
 
 Transform::Transform(Vector3& pos):
-    Component{Component_name::transform},
     position{pos},
     rotation{Vector3()}
-{}
+{
+    set_name(Component_name::transform);
+}
 
 void Transform::set_pos(const Vector3& new_pos){
     position = new_pos;
@@ -44,21 +51,23 @@ Vector3& Transform::rot(){
 }
 
 Camera::Camera():
-    Component{Component_name::camera},
     is_active{false}
-{}
+{
+    set_name(Component_name::camera);
+}
 
 
 Camera::Camera( const Vector3 &ll_corn,
                 const Vector3 &hor,
                 const Vector3 &vert
                 ):
-    Component{Component_name::camera},
     is_active{true},
     ll_corner{ll_corn},
     horisontal{hor},
     vertical{vert}
-{}
+{
+    set_name(Component_name::camera);
+}
 
 void Camera::setup(
         const Vector3 &ll_corn,
@@ -97,35 +106,38 @@ bool Camera::check_active(){
     return is_active;
 }
 
-Shape::Shape():
-    Component{Component_name::shape}
-{}
+Shape::Shape()
+{
+    set_name(Component_name::shape);
+}
 
 Shape::Shape(Shape_type t):
-    Component{Component_name::shape},
     type{t}
-{}
+{
+    set_name(Component_name::shape);
+}
 
 Shape::Shape(Color col, double rad):
-    Component{Component_name::shape},
     type{Shape_type::sphere},
     sphere_radius{rad},
     color{col}
-{}
+{
+    set_name(Component_name::shape);
+}
 
 Shape::Shape(Color col, Vector3 n):
-    Component{Component_name::shape},
     type{Shape_type::plane},
     color{col}
 {
     params.push_back(n);
+    set_name(Component_name::shape);
 }
 
 Shape::Shape(Color col, vector<Vector3> coords):
-    Component{Component_name::shape},
     type{Shape_type::triangle},
     color{col}
 {
+    set_name(Component_name::shape);
     for (auto i: coords){
         params.push_back(i);
     }
@@ -273,14 +285,16 @@ HitRecord& Shape::intersect_w_ray(Ray& ray, Transform& transform, HitRecord& rec
 
 
 Material::Material():
-    Component{Component_name::material},
     self{1.0}, mirror{0.0}, glass{0.0}
-{}
+{
+    set_name(Component_name::material);
+}
 
 Material::Material(double s, double m):
-    Component{Component_name::material},
     self{s}, mirror{m}, glass{1.0 - s - m}
-{}
+{
+    set_name(Component_name::material);
+}
 
 double Material::get_self(){
     return self;

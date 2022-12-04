@@ -20,16 +20,23 @@ struct HitRecord{
 };
 
 class Component{
-private:
-    Component_name name;
-
 public:
-    Component(Component_name n);
-    Component_name get_name() const;
-    bool check_name(Component_name n);
+    virtual void set_name(Component_name n) = 0;
+    virtual Component_name get_name() const = 0;
+    virtual bool check_name(Component_name n) const = 0;
+
 };
 
-class Transform: public Component{
+class NamedComponent : public Component{
+private:
+    Component_name name;
+public:
+    void set_name(Component_name n) override;
+    Component_name get_name() const override;
+    bool check_name(Component_name n) const override;
+};
+
+class Transform: public NamedComponent{
 private:
     Vector3 position;
     Vector3 rotation;
@@ -41,7 +48,7 @@ public:
     void set_pos(const Vector3& new_pos);
 };
 
-class Camera: public Component{
+class Camera: public NamedComponent{
 private:
     bool is_active;
     Vector3 ll_corner;
@@ -63,7 +70,7 @@ public:
     bool check_active();
 };
 
-class Shape: public Component{
+class Shape: public NamedComponent{
 private:
     Color color;
     Shape_type type;
@@ -94,7 +101,7 @@ public:
 };
 
 
-class Material: public Component{
+class Material: public NamedComponent{
 private:
     double self;
     double mirror;

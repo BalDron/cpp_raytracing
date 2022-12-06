@@ -1,20 +1,22 @@
 class Object{
 private:
+    vector<std::unique_ptr<Component>> components;
     int index;
     bool is_light;
     double light_force;
-    Camera camera;
-    Transform transform;
-    Shape shape;
-    Material material;
+    // Camera camera;
+    // Transform transform;
+    // Shape shape;
+    // Material material;
 public:
-    Object(int ind, Vector3& pos);
     Object(int ind);
     int get_ind();
     void set_light(double force);
     bool check_light();
     ~Object();
+    bool check_component(Component_name comp_name);
     Component& get_component(Component_name comp_name);
+    void add_component(Component_name comp_name);
     Camera& get_camera();
     Shape& get_shape();
     Transform& get_transform();
@@ -28,10 +30,10 @@ private:
     int index_count;
     int active_cam;
     vector<int> lights;
-    vector<std::shared_ptr<Object>> objects;
+    vector<std::unique_ptr<Object>> objects;
 public:
     World();
-    ~World();
+    // ~World();
     int size() const;
     int new_obj();
     Object& get_obj(int ind);

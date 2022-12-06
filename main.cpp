@@ -70,25 +70,29 @@ void read_world_config(World& objs){
 
         new_ind = objs.new_obj();
         cout << "ind: " << new_ind << endl;
-        objs[new_ind].get_transform().set_pos(vec);
-        objs[new_ind].get_material().set(mat[0], mat[1], mat[2]);
+        Object& ob = objs[new_ind];
+        ob.add_component(Component_name::transform);
+        ob.add_component(Component_name::material);
+        ob.add_component(Component_name::shape);
+        ob.get_transform().set_pos(vec);
+        ob.get_material().set(mat[0], mat[1], mat[2]);
 
         string shape_type = read_from<string>(w_file, 1)[0];
 
         if (shape_type == "s") {
             double rad = read_from<double>(w_file, 1)[0];
             cout << "rad: " << rad << endl;
-            objs[new_ind].get_shape().set_type(Shape_type::sphere);
-            objs[new_ind].get_shape().set_color(col);
-            objs[new_ind].get_shape().set_rad(rad);
+            ob.get_shape().set_type(Shape_type::sphere);
+            ob.get_shape().set_color(col);
+            ob.get_shape().set_rad(rad);
         } else if (shape_type == "p"){
             vector<double> n = read_from<double>(w_file, 3);
             Vector3 normal{n[0],n[1],n[2]};
             cout << "norm: " << normal[0] << " " << normal[1] << " " << normal[2] << endl;
             normal.unite();
-            objs[new_ind].get_shape().set_type(Shape_type::plane);
-            objs[new_ind].get_shape().set_color(col);
-            objs[new_ind].get_shape().add_param(normal);
+            ob.get_shape().set_type(Shape_type::plane);
+            ob.get_shape().set_color(col);
+            ob.get_shape().add_param(normal);
         } else if (shape_type == "t"){
             vector<Vector3> pos;
             for (int k = 0; k < 3; ++k){
@@ -98,9 +102,9 @@ void read_world_config(World& objs){
                 pos.push_back(vec);
                 cout << "pos "<< k << ": " << coord[0] << " " << coord[1] << " " << coord[2] << endl;
             }
-            objs[new_ind].get_shape().set_type(Shape_type::triangle);
-            objs[new_ind].get_shape().set_color(col);
-            objs[new_ind].get_shape().set_params(pos);
+            ob.get_shape().set_type(Shape_type::triangle);
+            ob.get_shape().set_color(col);
+            ob.get_shape().set_params(pos);
         }
 
 
@@ -117,6 +121,7 @@ void read_world_config(World& objs){
         double force = stod(tmp);
         new_ind = objs.new_obj();
         Vector3 vec{coord[0], coord[1], coord[2]};
+        objs[new_ind].add_component(Component_name::transform);
         objs[new_ind].get_transform().set_pos(vec);
         objs.set_light(new_ind, force);
     }
@@ -161,6 +166,8 @@ int main(){
     double screen_width = 3.0;
     double screen_height = screen_width * resolution[1] / resolution[0];
 
+    objs[new_ind].add_component(Component_name::transform);
+    objs[new_ind].add_component(Component_name::camera);
     objs[new_ind].get_camera().setup(
         Vector3(- (screen_width / 2), - (screen_height / 2), -1.0),
         Vector3(screen_width, 0.0, 0.0),

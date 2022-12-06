@@ -11,44 +11,106 @@
 #include "component.h"
 #include "object.h"
 
-Component& Object::get_component(Component_name comp_name = Component_name::shape){
+bool Object::check_component(Component_name comp_name){
+    for (int i = 0; i < components.size(); ++i){
+        if (components[i]->get_name() == comp_name){
+            return true;
+        }
+    }
+    return false;
+}
+
+Component& Object::get_component(Component_name comp_name){
+
+    // for (auto cmp : components){
+    for (int i = 0; i < components.size(); ++i){
+        if (components[i]->get_name() == comp_name){
+            return *components[i];
+        }
+    }
+    std::string nm;
     switch (comp_name) {
         case Component_name::transform:
-            return transform;
+            nm = "transform";
+            break;
         case Component_name::camera:
-            return camera;
+            nm = "camera";
+            break;
+        case Component_name::shape:
+            nm = "shape";
+            break;
+        case Component_name::material:
+            nm = "material";
+            break;
         default:
-            return shape;
+            throw std::runtime_error(
+                "Object.add_component: unknown component name"
+            );
     }
+    throw std::runtime_error(
+        "Object.get_component: no such component: " + nm
+    );
+}
+
+void Object::add_component(Component_name comp_name){
+    if (check_component(comp_name)){
+        throw std::runtime_error(
+            "Object.add_component: such component is already added."
+        );
+    }
+    std::unique_ptr<Component> cmp;
+    switch (comp_name) {
+        case Component_name::transform:
+            components.push_back(std::make_unique<Transform>());
+            break;
+        case Component_name::camera:
+            components.push_back(std::make_unique<Camera>());
+            break;
+        case Component_name::shape:
+            components.push_back(std::make_unique<Shape>());
+            break;
+        case Component_name::material:
+            components.push_back(std::make_unique<Material>());
+            break;
+        default:
+            throw std::runtime_error(
+                "Object.add_component: unknown component name"
+            );
+    }
+    // components.push_back(cmp);
 }
 
 Camera& Object::get_camera(){
+    Camera& camera = dynamic_cast<Camera&>(
+        get_component(Component_name::camera)
+    );
     return camera;
 }
 
 Shape& Object::get_shape(){
+    Shape& shape = dynamic_cast<Shape&>(
+        get_component(Component_name::shape)
+    );
     return shape;
 }
 
 Transform& Object::get_transform(){
+    Transform& transform = dynamic_cast<Transform&>(
+        get_component(Component_name::transform)
+    );
     return transform;
 }
 
 Material& Object::get_material(){
+    Material& material = dynamic_cast<Material&>(
+        get_component(Component_name::material)
+    );
     return material;
 }
 
-Object::Object(int ind, Vector3& pos){
+Object::Object(int ind){
     index = ind;
-    transform = Transform(pos);
-    camera = Camera();
-    shape = Shape();
-    material = Material();
 }
-
-Object::Object(int ind):
-    index{ind}, camera{}, transform{}, shape{}
-{}
 
 int Object::get_ind(){
     return index;
@@ -82,12 +144,8 @@ int World::size() const{
     return objects.size();
 }
 
-World::~World(){
-    objects.clear();
-}
-
 int World::new_obj(){
-    objects.push_back(std::make_shared<Object>(index_count));
+    objects.push_back(std::make_unique<Object>(index_count));
     index_count += 1;
     return index_count - 1;
 }
@@ -126,7 +184,8 @@ Object& World::operator[](int ind){
 
 int World::find_camera(){
     for (int i = 0; i < objects.size(); ++i){
-        if (objects[i]->get_camera().check_active()){
+        if (objects[i]->check_component(Component_name::camera)
+                && objects[i]->get_camera().check_active()){
             active_cam = objects[i]->get_ind();
             return active_cam;
         }
@@ -140,11 +199,11 @@ void World::rem_obj(int ind){
     objects.erase(objects.begin() + ind - 1);
 }
 
-HitRecord& World::check_intersections(Ray& ray, HitRecord& record){
+HitRecord& World::check_intersections(Ray& ray, HitRecord& record) {
     double tmp_t;
     record.t = -1.0;
     for (int i = 0; i < size(); ++i){
-        if (!objects[i]->get_camera().check_active() && !objects[i]->check_light()){
+        if (objects[i]->check_component(Component_name::shape)) {
             tmp_t = objects[i]->get_shape().check_intersection(ray, objects[i]->get_transform());
             if (tmp_t > 0.0 && (tmp_t < record.t || record.t <= 0.0)){
                 record.t = tmp_t;

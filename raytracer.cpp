@@ -85,12 +85,11 @@ Color Raytracer::cast_ray(Ray& ray, World& objs, int depth){
 
 
 void Raytracer::make_concurrent_step(World& objs, int start, int step){
-    int cam_ind = objs.find_camera();
-    if (cam_ind == -1){
+    int cam = objs.find_camera();
+    if (cam == -1){
         throw runtime_error(
             "Raytracer.make_step(): There is no camera");
     }
-    int cam = objs.find_camera();
     Color clr;
     for (int i = start; i < resolution_y; i += step){
         for (int j = 0; j < resolution_x; ++j){

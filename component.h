@@ -72,9 +72,9 @@ public:
 
 class Shape: public NamedComponent{
 private:
-    Color color;
+    Color color = Color(0, 0, 0);
     Shape_type type;
-    double sphere_radius;
+    double sphere_radius = 0.0;
     vector<Vector3> params;
 
     vector<double> sphere_count_abcd(Ray& ray, Vector3& pos);

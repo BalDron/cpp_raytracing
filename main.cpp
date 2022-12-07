@@ -147,8 +147,8 @@ void put_it_out(vector<vector<Color>>& pixels, string filename){
     file << pixels[0].size() << " ";
     file << pixels.size() << " 255\n";
 
-    for (int i = 0; i < pixels.size(); ++i){
-        for (int j = 0; j < pixels[0].size(); ++j){
+    for (long unsigned int i = 0; i < pixels.size(); ++i){
+        for (long unsigned int j = 0; j < pixels[0].size(); ++j){
             Color tmp = pixels[i][j];
             file << int(tmp.r()) << " " << int(tmp.g()) << " " << int(tmp.b()) << " ";
         }
@@ -180,7 +180,7 @@ int main(){
     int threads = 6;
     Raytracer rt{resolution[0], resolution[1], resolution[2], threads};
     auto start = chrono::high_resolution_clock::now();
-    rt.make_step(objs, 0);
+    rt.make_step(objs, 1);
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
     cout << duration.count() << " ms" << endl;

@@ -12,7 +12,7 @@
 #include "object.h"
 
 bool Object::check_component(Component_name comp_name){
-    for (int i = 0; i < components.size(); ++i){
+    for (long unsigned int i = 0; i < components.size(); ++i){
         if (components[i]->get_name() == comp_name){
             return true;
         }
@@ -21,9 +21,7 @@ bool Object::check_component(Component_name comp_name){
 }
 
 Component& Object::get_component(Component_name comp_name){
-
-    // for (auto cmp : components){
-    for (int i = 0; i < components.size(); ++i){
+    for (long unsigned int i = 0; i < components.size(); ++i){
         if (components[i]->get_name() == comp_name){
             return *components[i];
         }
@@ -77,7 +75,6 @@ void Object::add_component(Component_name comp_name){
                 "Object.add_component: unknown component name"
             );
     }
-    // components.push_back(cmp);
 }
 
 Camera& Object::get_camera(){
@@ -134,11 +131,13 @@ double Object::get_light_force(){
     return light_force;
 }
 
-Object::~Object(){}
-
 World::World():
     index_count{0}
 {}
+
+World::~World(){
+    lights.clear();
+}
 
 int World::size() const{
     return objects.size();
@@ -156,7 +155,7 @@ Object& World::get_obj(int ind){
             "World.get_obj(): ind is out of size"
         );
     }
-    for (int i = 0; i < objects.size(); ++i){
+    for (long unsigned int i = 0; i < objects.size(); ++i){
         if (objects[i]->get_ind() == ind){
             return *objects[i].get();
         }
@@ -172,7 +171,7 @@ Object& World::operator[](int ind){
             "World.operator[](): ind is out of bound"
         );
     }
-    for (int i = 0; i < objects.size(); ++i){
+    for (long unsigned int i = 0; i < objects.size(); ++i){
         if (objects[i]->get_ind() == ind){
             return *objects[i].get();
         }
@@ -183,7 +182,7 @@ Object& World::operator[](int ind){
 }
 
 int World::find_camera(){
-    for (int i = 0; i < objects.size(); ++i){
+    for (long unsigned int i = 0; i < objects.size(); ++i){
         if (objects[i]->check_component(Component_name::camera)
                 && objects[i]->get_camera().check_active()){
             active_cam = objects[i]->get_ind();

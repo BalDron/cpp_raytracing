@@ -118,24 +118,25 @@ Shape::Shape(Shape_type t):
 }
 
 Shape::Shape(Color col, double rad):
+    color{col},
     type{Shape_type::sphere},
-    sphere_radius{rad},
-    color{col}
+    sphere_radius{rad}
+
 {
     set_name(Component_name::shape);
 }
 
 Shape::Shape(Color col, Vector3 n):
-    type{Shape_type::plane},
-    color{col}
+    color{col},
+    type{Shape_type::plane}
 {
     params.push_back(n);
     set_name(Component_name::shape);
 }
 
 Shape::Shape(Color col, vector<Vector3> coords):
-    type{Shape_type::triangle},
-    color{col}
+    color{col},
+    type{Shape_type::triangle}
 {
     set_name(Component_name::shape);
     for (auto i: coords){

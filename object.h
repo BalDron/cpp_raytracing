@@ -2,20 +2,18 @@ class Object{
 private:
     vector<std::unique_ptr<Component>> components;
     int index;
-    bool is_light;
-    double light_force;
 public:
     Object(int ind);
     int get_ind();
     void set_light(double force);
-    bool check_light();
     bool check_component(Component_name comp_name);
-    Component& get_component(Component_name comp_name);
     void add_component(Component_name comp_name);
+    Component& get_component(Component_name comp_name);
     Camera& get_camera();
     Shape& get_shape();
     Transform& get_transform();
     Material& get_material();
+    Light& get_light();
     double get_light_force();
 };
 

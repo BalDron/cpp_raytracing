@@ -40,6 +40,9 @@ Component& Object::get_component(Component_name comp_name){
         case Component_name::material:
             nm = "material";
             break;
+        case Component_name::light:
+            nm = "light";
+            break;
         default:
             throw std::runtime_error(
                 "Object.add_component: unknown component name"
@@ -56,7 +59,6 @@ void Object::add_component(Component_name comp_name){
             "Object.add_component: such component is already added."
         );
     }
-    std::unique_ptr<Component> cmp;
     switch (comp_name) {
         case Component_name::transform:
             components.push_back(std::make_unique<Transform>());
@@ -69,6 +71,9 @@ void Object::add_component(Component_name comp_name){
             break;
         case Component_name::material:
             components.push_back(std::make_unique<Material>());
+            break;
+        case Component_name::light:
+            components.push_back(std::make_unique<Light>());
             break;
         default:
             throw std::runtime_error(
@@ -105,6 +110,13 @@ Material& Object::get_material(){
     return material;
 }
 
+Light& Object::get_light(){
+    Light& light = dynamic_cast<Light&>(
+        get_component(Component_name::light)
+    );
+    return light;
+}
+
 Object::Object(int ind){
     index = ind;
 }
@@ -113,22 +125,8 @@ int Object::get_ind(){
     return index;
 }
 
-void Object::set_light(double force){
-    if (force > 0.0){
-        is_light = true;
-        light_force = force;
-    } else {
-        is_light = false;
-        light_force = 0.0;
-    }
-}
-
-bool Object::check_light(){
-    return is_light;
-}
-
 double Object::get_light_force(){
-    return light_force;
+    return get_light().get_force();
 }
 
 World::World():
@@ -228,7 +226,8 @@ Color World::get_bg(){
 }
 
 void World::set_light(int ind, double force){
-    get_obj(ind).set_light(force);
+    get_obj(ind).add_component(Component_name::light);
+    get_obj(ind).get_light().set_force(force);
     lights.push_back(ind);
 }
 

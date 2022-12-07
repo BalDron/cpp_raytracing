@@ -63,6 +63,9 @@ Color Raytracer::cast_ray(Ray& ray, World& objs, int depth){
         light += mirror * (refl_col.r() + refl_col.g() + refl_col.b()) / (3 * 255.0);
 
         for (int i = 0; i < objs.lights_number(); ++i){
+            if (objs.get_light(i).get_light_force() == 0.0){
+                continue;
+            }
             Vector3 vec_to_light = objs.get_light(i).get_transform().pos() - record.hit_point;
             Vector3 vec_to_light_copy = vec_to_light;
             vec_to_light.unite();

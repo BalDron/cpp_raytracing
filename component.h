@@ -2,7 +2,8 @@ enum class Component_name{
     transform,
     camera,
     shape,
-    material
+    material,
+    light
 };
 
 enum class Shape_type{
@@ -113,4 +114,14 @@ public:
     double get_mirror();
     double get_glass();
     void set(double s, double m, double g);
+};
+
+class Light: public NamedComponent {
+private:
+    double force = 0;
+public:
+    Light();
+    Light(double f);
+    double get_force();
+    void set_force(double f);
 };

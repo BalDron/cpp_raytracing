@@ -314,3 +314,23 @@ void Material::set(double s, double m, double g){
     mirror = m;
     glass = g;
 }
+
+Light::Light():
+    force{0.0}
+{
+    set_name(Component_name::light);
+}
+
+Light::Light(double f):
+    force{f}
+{
+    set_name(Component_name::light);
+}
+
+double Light::get_force(){
+    return force;
+}
+
+void Light::set_force(double f){
+    force = f;
+}

@@ -1,3 +1,12 @@
+#ifndef __COMPONENT__
+#define __COMPONENT__
+
+#include <memory>
+using std::vector;
+
+class Vector3;
+class Component;
+
 enum class Component_name{
     transform,
     camera,
@@ -125,3 +134,5 @@ public:
     double get_force();
     void set_force(double f);
 };
+
+#endif

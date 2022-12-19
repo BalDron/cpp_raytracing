@@ -1,3 +1,14 @@
+#ifndef __RAYTRACER__
+#define __RAYTRACER__
+
+#include <vector>
+using std::vector;
+
+class World;
+class Ray;
+class Vector3;
+class Color;
+
 class Raytracer{
 private:
     int resolution_x;
@@ -14,3 +25,5 @@ public:
     vector<vector<Color>>& get_image();
     void soften_image();
 };
+
+#endif

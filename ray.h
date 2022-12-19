@@ -1,3 +1,8 @@
+#ifndef __RAY__
+#define __RAY__
+
+class Vector3;
+
 class Ray{
 private:
     Vector3 origin;
@@ -11,3 +16,5 @@ public:
     Vector3& get_origin();
     Vector3& get_direction();
 };
+
+#endif

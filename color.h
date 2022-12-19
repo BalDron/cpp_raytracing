@@ -1,3 +1,6 @@
+#ifndef __COLOR__
+#define __COLOR__
+
 class Color{
 private:
     vector<double> rgb;
@@ -26,3 +29,5 @@ public:
 
     Color& operator=(const Color& col);
 };
+
+#endif

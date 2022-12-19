@@ -1,3 +1,10 @@
+#ifndef __VECTOR__
+#define __VECTOR__
+
+#include <vector>
+#include <memory>
+using std::unique_ptr;
+
 class Vector3{
 private:
     vector<double> axis;
@@ -48,3 +55,5 @@ double dot(Vector3& vec1, Vector3& vec2);
 Vector3 cross(const Vector3& v1, const Vector3& v2);
 
 Vector3 unit_vector(Vector3& vec);
+
+#endif

@@ -1,6 +1,17 @@
+#ifndef __OBJECT__
+#define __OBJECT__
+
+#include <memory>
+using std::unique_ptr;
+
+#include "component.h"
+
+class Color;
+class Vector3;
+
 class Object{
 private:
-    vector<std::unique_ptr<Component>> components;
+    vector<unique_ptr<Component>> components;
     int index;
 public:
     Object(int ind);
@@ -42,3 +53,5 @@ public:
     int lights_number();
     Object& get_light(int num);
 };
+
+#endif

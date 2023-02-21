@@ -1,7 +1,8 @@
-main
-*.out
-*.o
-main
-build*
 *bmp
 *png
+*Cache*
+Makefile
+bin
+CMakeFiles
+cmake_install.cmake
+*.md
